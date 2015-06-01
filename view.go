@@ -26,8 +26,8 @@ var pieceColors = []termbox.Attribute{
 	termbox.ColorWhite,
 }
 
-const defaultMarginWidth = 2
-const defaultMarginHeight = 2
+const defaultMarginWidth = 1
+const defaultMarginHeight = 1
 const titleStartX = defaultMarginWidth
 const titleStartY = defaultMarginHeight
 const titleHeight = 1
