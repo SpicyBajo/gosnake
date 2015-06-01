@@ -18,29 +18,6 @@ const (
 	HighSpeed  = 150 * time.Millisecond
 )
 
-// Pieces
-var dxBank = [][]int{
-	{},
-	{0, 1, -1, 0},
-	{0, 1, -1, -1},
-	{0, 1, -1, 1},
-	{0, -1, 1, 0},
-	{0, 1, -1, 0},
-	{0, 1, -1, -2},
-	{0, 1, 1, 0},
-}
-
-var dyBank = [][]int{
-	{},
-	{0, 0, 0, 1},
-	{0, 0, 0, 1},
-	{0, 0, 0, 1},
-	{0, 0, 1, 1},
-	{0, 0, 1, 1},
-	{0, 0, 0, 0},
-	{0, 0, 1, 1},
-}
-
 type Game struct {
 	board         [][]int // [y][x]
 	prevLocations [][]int // [x][y]
@@ -57,8 +34,6 @@ type Game struct {
 	direction     int
 	dx            []int
 	dy            []int
-	dxPrime       []int
-	dyPrime       []int
 	fallingTimer  *time.Timer
 }
 
@@ -85,11 +60,9 @@ func (g *Game) resetGame() {
 	g.y = 5
 	g.direction = 3
 	g.dotLocation = []int{0, 0}
-	g.prevLocations = [][]int{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}
+	g.prevLocations = [][]int{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}
 	g.dx = []int{1, 0, 0, 0}
 	g.dy = []int{1, 0, 0, 0}
-	g.dxPrime = []int{1, 0, 0, 0}
-	g.dyPrime = []int{1, 0, 0, 0}
 	g.dotX = -500
 	g.dotY = -500
 
@@ -98,35 +71,52 @@ func (g *Game) resetGame() {
 
 }
 
+//Called every time Play() is called
 func (g *Game) resetFallingTimer() {
 	g.fallingTimer.Reset(g.speed())
 }
 
+//Determines speed based on Dots -- Needs work
 func (g *Game) speed() time.Duration {
-	return slowSpeed - HighSpeed*time.Duration(g.dots/2)
+
+	multiplier := 0
+
+	switch {
+	case g.dots <= 4:
+		multiplier = 50
+	case g.dots > 4 && g.dots <= 9:
+		multiplier = 45
+	case g.dots > 9 && g.dots <= 12:
+		multiplier = 35
+	case g.dots > 12 && g.dots <= 14:
+		multiplier = 30
+	case g.dots > 14 && g.dots <= 20:
+		multiplier = 22
+	case g.dots > 20:
+		multiplier = 25
+	}
+
+	return 500*time.Millisecond - (time.Duration(g.dots*multiplier) * time.Millisecond)
 
 }
 
-// Set the timer to make the pieces fall again.
-
+//This goes off for every timer tick
 func (g *Game) play() {
+
+	//Ends game if snake is outside boarders
+	if g.x < 0 || g.x > 19 || g.y < 0 || g.y > 19 {
+
+		g.state = gameOver
+		g.resetGame()
+		g.start()
+
+	}
 
 	g.erasePiece()
 
 	if g.d > 0 {
 
-		//m := g.d - 1
-		//n := m - 1
-		//p := m - 1
-
-		/*
-			g.prevLocations[q][0] = g.prevLocations[n][0]
-			g.prevLocations[q][1] = g.prevLocations[n][1]
-
-			g.prevLocations[n][0] = g.prevLocations[m][0]
-			g.prevLocations[n][1] = g.prevLocations[m][1]
-		*/
-
+		// Moves snake body around by recording previous locations of snake head
 		if g.d > 1 {
 			for i := g.d - 1; i > 0; i-- {
 
@@ -142,6 +132,7 @@ func (g *Game) play() {
 		g.prevLocations[0][1] = g.x
 	}
 
+	//Moves snake head beased on current direction
 	switch {
 	case g.direction == 1:
 		g.x++
@@ -153,36 +144,47 @@ func (g *Game) play() {
 		g.y--
 	}
 
+	//Ends game if snake hits itself
+	for i := g.d; i > 0; i-- {
+
+		if g.x == g.prevLocations[i][1] && g.y == g.prevLocations[i][0] {
+
+			g.state = gameOver
+			g.resetGame()
+			g.start()
+
+		}
+
+	}
+
+	//If snake head its dot, draws new dot and continues game play
 	if g.x == (g.dotLocation[0]) && g.y == (g.dotLocation[1]) {
+
+		g.resetFallingTimer()
 		g.dots++
 		g.d++
 		g.getDot()
-		g.resetFallingTimer()
+		g.play()
 
 	}
 
 	g.fillMatrix()
-	g.resetFallingTimer()
 
 }
 
+//Gets a single snake head
 func (g *Game) getPiece() bool {
 	g.piece = 1
 	g.x = boardWidth / 2
 	g.y = boardHeight / 2
 
-	for k := 0; k < numSquares; k++ {
-		g.dx[k] = dxBank[g.piece][k]
-		g.dy[k] = dyBank[g.piece][k]
-	}
-	for k := 0; k < numSquares; k++ {
-		g.dxPrime[k] = g.dx[k]
-		g.dyPrime[k] = g.dy[k]
-	}
+	g.dx[0] = 0
+	g.dy[0] = 0
 
 	return true
 }
 
+//Finds new position for dot when it is eaten by snake
 func (g *Game) getDot() bool {
 
 	g.dot = 1
@@ -190,30 +192,42 @@ func (g *Game) getDot() bool {
 	g.dotX = rand.Int() % boardWidth
 	g.dotY = rand.Int() % boardHeight
 
+	for i := 0; i < g.dots; i++ {
+
+		if g.dotX == g.prevLocations[i][1] && g.dotY == g.prevLocations[i][0] {
+
+			g.getDot()
+
+		}
+
+	}
+
 	g.dotLocation[0] = g.dotX
 	g.dotLocation[1] = g.dotY
 
 	return true
 }
 
+//Draws everything on board
 func (g *Game) fillMatrix() {
-	for k := 0; k < numSquares; k++ { // Fill Snake
+	// Fill Snake Head
+	for k := 0; k < numSquares; k++ {
 		x := g.x
 		y := g.y
 
 		g.board[y][x] = 1
 
 	}
-
-	for k := 0; k < numSquares; k++ { // fill DOT
+	// fill dot
+	for k := 0; k < numSquares; k++ {
 		x := g.dotX
 		y := g.dotY
 
 		g.board[y][x] = 2
 
 	}
-
-	for k := 0; k < numSquares; k++ { // fill extra Snake
+	// fill extra Snake
+	for k := 0; k < numSquares; k++ {
 
 		for m := 0; m < g.d; m++ {
 
@@ -226,8 +240,11 @@ func (g *Game) fillMatrix() {
 
 	}
 
+	g.resetFallingTimer()
+
 }
 
+//Draws everything in new positions for every time tick
 func (g *Game) placePiece() {
 
 	for k := 0; k < numSquares; k++ {
@@ -240,7 +257,9 @@ func (g *Game) placePiece() {
 
 }
 
+//Clears board for re-draw every time tick
 func (g *Game) erasePiece() {
+	//erase snake head
 	for k := 0; k < numSquares; k++ {
 		x := g.x + g.dx[k]
 		y := g.y + g.dy[k]
@@ -249,8 +268,8 @@ func (g *Game) erasePiece() {
 		}
 
 	}
-
-	for k := 0; k < numSquares; k++ { // erase extra Snake
+	//erase extra snake
+	for k := 0; k < numSquares; k++ {
 
 		for m := 0; m < (g.d); m++ {
 			x := g.prevLocations[m][1]
@@ -262,6 +281,7 @@ func (g *Game) erasePiece() {
 	}
 }
 
+//User pressed S to start game
 func (g *Game) start() {
 	switch g.state {
 	case gameStarted:

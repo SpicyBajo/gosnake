@@ -10,7 +10,7 @@ import (
 	//"strconv"
 )
 
-// Colors
+// Colors from Termbox
 const backgroundColor = termbox.ColorBlue
 const boardColor = termbox.ColorBlack
 const instructionsColor = termbox.ColorYellow
@@ -27,7 +27,7 @@ var pieceColors = []termbox.Attribute{
 }
 
 const defaultMarginWidth = 2
-const defaultMarginHeight = 1
+const defaultMarginHeight = 2
 const titleStartX = defaultMarginWidth
 const titleStartY = defaultMarginHeight
 const titleHeight = 1
@@ -53,7 +53,6 @@ var instructions = []string{
 	"\u2191		Up",
 	"\u2193		Down",
 	"s		Start",
-	"p		Pause",
 	"esc	Exit",
 	"",
 	"Dots: %v",
@@ -76,7 +75,7 @@ func render(g *Game) {
 	}
 	for y, instruction := range instructions {
 		if strings.HasPrefix(instruction, "Dots:") {
-			instruction = fmt.Sprintf(instruction, g.prevLocations[0][1])
+			instruction = fmt.Sprintf(instruction, g.dots)
 		} else if strings.HasPrefix(instruction, "GAME OVER") && g.state != gameOver {
 			instruction = ""
 		}
