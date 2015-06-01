@@ -5,28 +5,32 @@ Dependencies
 
 https://github.com/nsf/termbox-go
 
-# Setup the Go workspace
-
-mkdir -p gosnake/src/github.com/adamturner92
+## Setup the Go workspace
+```
+mkdir -p gosnake/src/github.com/adamturner92 
 cd gosnake
-(cd src/github.com/adamturner92 &&
-  git clone https://github.com/adamturner92/gosnake.git)
+cd src/github.com/adamturner92 
+git clone https://github.com/adamturner92/gosnake.git)
+```
 
-# Do this each time to work on the code from the top-level gotetris directory.
+## Do this each time to work on the code from the top-level gotetris directory.
+```
 export GOPATH=`pwd`
 export PATH=$PATH:$GOPATH/bin
+```
 
-# Install dependencies.
-go get -u github.com/nsf/termbox-go
+## Install dependencies.
 
-# Build:
+`go get -u github.com/nsf/termbox-go`
 
-go install github.com/adamturner92/gosnake
+## Build:
 
-#Execute
+`go install github.com/adamturner92/gosnake`
 
-gosnake
+## Execute
 
-# Credits:
+`gosnake`
+
+### Credits:
 Based off of gotetris
 https://github.com/jjinux/gotetris
