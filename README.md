@@ -1,5 +1,5 @@
 # gosnake
-Snake written in Go (built from gotetris)
+Snake written in Go
 
 Dependencies
 
@@ -10,10 +10,10 @@ https://github.com/nsf/termbox-go
 mkdir -p gosnake/src/github.com/adamturner92 
 cd gosnake
 cd src/github.com/adamturner92 
-git clone https://github.com/adamturner92/gosnake.git)
+git clone https://github.com/adamturner92/gosnake.git
 ```
 
-## Do this each time to work on the code from the top-level gotetris directory.
+## Do this each time to work on the code from the top-level gosnake directory.
 ```
 export GOPATH=`pwd`
 export PATH=$PATH:$GOPATH/bin
